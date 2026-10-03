@@ -106,7 +106,7 @@ svg{width:24px;height:24px;fill:currentColor;flex:none}
 </style></head>
 <body>
 <div class="full" id="auth" hidden><div class="card">
-  <h1 id="ah">Connexion</h1><p id="ap">Retrouve tes discussions.</p>
+  <div id="srv" style="text-align:center;font-size:12px;color:var(--sub);margin-bottom:8px"></div><h1 id="ah">Connexion</h1><p id="ap">Retrouve tes discussions.</p>
   <div id="nameW" hidden><label for="aname">Ton prénom</label><input id="aname" type="text" autocomplete="name" maxlength="40"></div>
   <label for="amail">E-mail</label><input id="amail" type="email" autocomplete="email">
   <label for="apass">Mot de passe</label><input id="apass" type="password" autocomplete="current-password" minlength="6">
@@ -288,7 +288,12 @@ $('cs').onclick=function(){setColor($('cc').value,true);closePage()};
 $('cr').onclick=function(){$('cc').value=DEF;setColor(DEF,true);closePage()};
 $('cx').onclick=function(){setColor(orig);closePage()}}
 /* démarrage */
-async function boot(){authUI();var s=await sb.auth.getSession();if(s.data&&s.data.session)enter(s.data.session.user);else $('auth').hidden=false}
+async function diag(){var e=$('srv'),h=SB_URL.replace('https://','').split('.')[0];e.textContent='Serveur '+h.slice(0,6)+'… : test en cours';
+try{var r=await fetch(SB_URL+'/auth/v1/health',{headers:{apikey:SB_KEY}}),t=await r.text();
+if(/egress|restricted/i.test(t)){e.style.color='#d93025';e.textContent='Serveur '+h.slice(0,6)+'… : BLOQUÉ (quota de données dépassé)'}
+else{e.style.color='var(--main)';e.textContent='Serveur '+h.slice(0,6)+'… : OK, connecté'}}
+catch(x){e.style.color='#d93025';e.textContent='Serveur '+h.slice(0,6)+'… : injoignable (bloqueur de pub, ou aperçu d’éditeur)'}}
+async function boot(){diag();authUI();var s=await sb.auth.getSession();if(s.data&&s.data.session)enter(s.data.session.user);else $('auth').hidden=false}
 boot();
 })();
 </script>
