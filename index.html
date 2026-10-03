@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#009688">
+<title>Frerchat</title>
+<style>
+:root{--main:#009688;--bg:#d9dbd5;--panel:#fff;--hdr:#ededed;--text:#141414;--sub:#8c8c8c;--line:#f2f2f2;--out:#dcf8c6;--outp:22%;--outb:#fff;--in:#fff;--chat:#e5ddd5;--hover:#f5f5f5;--active:#ebebeb;--input:#fff;--chip:#e1f3fb;--chipt:#5a6a72;--dot:rgba(0,0,0,.045);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1317;--panel:#111b21;--hdr:#202c33;--text:#e9edef;--sub:#8696a0;--line:#222d34;--out:#005c4b;--outp:55%;--outb:#000;--in:#202c33;--chat:#0b141a;--hover:#202c33;--active:#2a3942;--input:#2a3942;--chip:#182229;--chipt:#8696a0;--dot:rgba(255,255,255,.04)}}
+:root[data-theme="dark"]{--bg:#0c1317;--panel:#111b21;--hdr:#202c33;--text:#e9edef;--sub:#8696a0;--line:#222d34;--out:#005c4b;--outp:55%;--outb:#000;--in:#202c33;--chat:#0b141a;--hover:#202c33;--active:#2a3942;--input:#2a3942;--chip:#182229;--chipt:#8696a0;--dot:rgba(255,255,255,.04)}
+:root.custom{--out:color-mix(in srgb,var(--main) var(--outp),var(--outb))}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14.2px/1.4 "Segoe UI",Helvetica Neue,Helvetica,Arial,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible{outline:2px solid var(--main);outline-offset:2px}
+svg{width:24px;height:24px;fill:currentColor;flex:none}
+[hidden]{display:none!important}
+.app{display:flex;height:100%;max-width:1600px;margin:0 auto;background:var(--panel);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.side{width:34%;min-width:340px;max-width:480px;display:flex;flex-direction:column;border-right:1px solid var(--active);background:var(--panel)}
+.bar{height:59px;padding:0 16px;display:flex;align-items:center;gap:6px;background:var(--hdr);flex:none}
+.sp{flex:1}
+.ic{color:var(--sub);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;touch-action:manipulation;-webkit-touch-callout:none;user-select:none}
+.ic:hover{background:var(--active)}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:600;flex:none;background-size:cover;background-position:center}
+.title{font-size:19px;font-weight:600;color:var(--main);margin-left:6px}
+.search{padding:7px 12px;flex:none;border-bottom:1px solid var(--line)}
+.search label{display:flex;align-items:center;gap:14px;background:var(--hdr);border-radius:18px;height:35px;padding:0 14px;color:var(--sub)}
+.search svg{width:18px;height:18px}
+.search input{flex:1;border:0;background:none;color:var(--text);font:inherit;outline:0;min-width:0}
+.list{flex:1;overflow-y:auto}
+.row{display:flex;align-items:center;gap:15px;padding:0 15px;width:100%;text-align:left;height:72px;-webkit-touch-callout:none;user-select:none;touch-action:manipulation}
+.row:hover{background:var(--hover)}
+.row.on{background:var(--active)}
+.row .av{width:49px;height:49px;font-size:18px}
+.mid{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--line)}
+.l1,.l2{display:flex;align-items:center;gap:6px}
+.name{flex:1;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.time{font-size:12px;color:var(--sub)}
+.time.u{color:var(--main)}
+.prev{flex:1;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;display:flex;align-items:center;gap:3px}
+.prev svg{width:16px;height:15px}
+.badge{background:var(--main);color:#fff;border-radius:12px;min-width:20px;height:20px;padding:0 6px;font-size:12px;font-weight:600;display:grid;place-items:center}
+.note{padding:28px 24px;text-align:center;color:var(--sub)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--chat)}
+.empty{flex:1;display:grid;place-items:center;text-align:center;color:var(--sub);padding:24px;background:var(--hdr)}
+.empty h2{font-weight:300;font-size:30px;color:var(--text);margin:0 0 12px}
+.empty p{margin:0;max-width:420px}
+.chat{display:none;flex-direction:column;flex:1;min-height:0}
+.app.open .chat{display:flex}
+.app.open .empty{display:none}
+.hd .who{flex:1;min-width:0;margin-left:6px}
+.hd .n{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd .s{font-size:13px;color:var(--sub);min-height:18px}
+.back{display:none}
+.sec .hd{background:#1f2c34;color:#e9edef}
+.lock{display:none;align-items:center;gap:10px;background:#1f2c34;color:#e9edef;padding:8px 16px;font-size:13px;border-top:1px solid #2a3942}
+.sec .lock{display:flex}
+.lock span{flex:1}
+.lock button{color:#53bdeb;font-weight:600}
+.msgs{flex:1;overflow-y:auto;padding:12px 7% 8px;background-image:radial-gradient(var(--dot) 1.5px,transparent 1.6px),radial-gradient(var(--dot) 1.5px,transparent 1.6px);background-size:34px 34px;background-position:0 0,17px 17px;display:flex;flex-direction:column}
+.day{align-self:center;background:var(--chip);color:var(--chipt);font-size:12.5px;padding:5px 12px;border-radius:7px;margin:8px 0 12px;box-shadow:0 1px .5px rgba(0,0,0,.13);text-transform:uppercase}
+.m{max-width:65%;padding:6px 7px 8px 9px;border-radius:7px;margin-bottom:2px;position:relative;box-shadow:0 1px .5px rgba(0,0,0,.13);overflow-wrap:anywhere;white-space:pre-wrap}
+.m.in{align-self:flex-start;background:var(--in);border-top-left-radius:0}
+.m.out{align-self:flex-end;background:var(--out);border-top-right-radius:0}
+.m.bad{font-style:italic;color:var(--sub)}
+.m.first{margin-top:8px}
+.m.first::before{content:"";position:absolute;top:0;width:8px;height:13px;background:inherit}
+.m.first.in::before{left:-8px;clip-path:polygon(100% 0,0 0,100% 100%)}
+.m.first.out::before{right:-8px;clip-path:polygon(0 0,100% 0,0 100%)}
+.m .t{float:right;margin:7px 0 -5px 12px;font-size:11px;color:var(--sub);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.m .t svg{width:16px;height:15px}
+.ft{display:flex;align-items:center;gap:6px;padding:10px 16px;background:var(--hdr);flex:none}
+.ft .box{flex:1;background:var(--input);border-radius:21px;display:flex}
+.ft input{flex:1;border:0;background:none;color:var(--text);font:inherit;font-size:15px;padding:10px 16px;outline:0;min-width:0}
+.ft input::placeholder{color:var(--sub)}
+.full{position:fixed;inset:0;z-index:5;background:var(--hdr);display:flex;flex-direction:column;align-items:center;padding:0 20px;overflow:auto}
+.full::before{content:"";position:absolute;top:0;left:0;right:0;height:30%;min-height:200px;background:var(--main);z-index:-1}
+.card{margin:max(6vh,40px) 0 30px;background:var(--panel);border-radius:4px;box-shadow:0 17px 50px rgba(0,0,0,.19);max-width:460px;width:100%;padding:30px 28px}
+.card h1{font-weight:300;font-size:26px;margin:0 0 6px;text-align:center}
+.card p{color:var(--sub);margin:0 0 18px;text-align:center}
+.card label{display:block;font-size:13px;color:var(--main);margin:14px 0 4px}
+.card input[type=text],.card input[type=email],.card input[type=password],.card input[type=tel]{width:100%;border:0;border-bottom:2px solid var(--active);background:none;color:var(--text);font:inherit;font-size:16px;padding:8px 2px;outline:0}
+.card input:focus{border-color:var(--main)}
+.btn{display:block;width:100%;background:var(--main);color:#fff;border-radius:4px;padding:11px 20px;font-size:15px;font-weight:500;margin-top:20px;text-align:center}
+.btn:hover{filter:brightness(1.08)}
+.btn.g{background:var(--active);color:var(--text)}
+.link{color:var(--main);font-weight:600;display:block;margin:16px auto 0;text-align:center}
+.err{color:#d93025;min-height:18px;margin-top:10px;text-align:center;font-size:13px}
+.code{font-size:34px;letter-spacing:4px;text-align:center;font-weight:300;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.sw{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:16px 0}
+.sw button{width:38px;height:38px;border-radius:50%;border:3px solid var(--panel);box-shadow:0 0 0 1px var(--active)}
+.prevbox{height:90px;border-radius:8px;background:var(--chat);display:flex;flex-direction:column;justify-content:center;gap:6px;padding:0 14px}
+.prevbox i{font-style:normal;padding:6px 10px;border-radius:7px;max-width:70%}
+.prevbox .a{background:var(--in);align-self:flex-start}
+.prevbox .b{background:var(--out);align-self:flex-end}
+.pick{display:flex;justify-content:center;margin-top:14px}
+.pick input{width:120px;height:46px;border:0;padding:0;background:none;cursor:pointer}
+@media (max-width:760px){
+.side{width:100%;max-width:none;min-width:0;border:0}
+.main{display:none;width:100%}
+.app.open .side{display:none}
+.app.open .main{display:flex}
+.back{display:grid}
+.msgs{padding:10px 4%}
+.m{max-width:82%}
+}
+</style></head>
+<body>
+<div class="full" id="auth" hidden><div class="card">
+  <h1 id="ah">Connexion</h1><p id="ap">Retrouve tes discussions.</p>
+  <div id="nameW" hidden><label for="aname">Ton prénom</label><input id="aname" type="text" autocomplete="name" maxlength="40"></div>
+  <label for="amail">E-mail</label><input id="amail" type="email" autocomplete="email">
+  <label for="apass">Mot de passe</label><input id="apass" type="password" autocomplete="current-password" minlength="6">
+  <div class="err" id="aerr"></div>
+  <button class="btn" id="ago">Se connecter</button>
+  <button class="link" id="aswap">Créer un compte</button>
+</div></div>
+
+<div class="full" id="pg" hidden><div class="card" id="pgc"></div></div>
+
+<div class="app" id="app" hidden>
+<aside class="side">
+  <div class="bar"><div class="av" id="mav"></div><span class="title">Frerchat</span><span class="sp"></span>
+    <button class="ic" id="add" aria-label="Ajouter un contact"><svg viewBox="0 0 24 24"><path d="M15 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-9 0V9H4v3H1v2h3v3h2v-3h3v-2zm9 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg></button>
+    <button class="ic" id="theme" aria-label="Thème (appui long : couleur)"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.5 0-.9-.1-1.3A5.5 5.5 0 0 1 13.3 3.1 9 9 0 0 0 12 3z"/></svg></button>
+    <button class="ic" id="set" aria-label="Réglages"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.4 2.7h4l.4-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg></button>
+  </div>
+  <div class="search"><label><svg viewBox="0 0 24 24"><path d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 14 15.5l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg><input id="q" placeholder="Rechercher une discussion" aria-label="Rechercher"></label></div>
+  <div class="list" id="list"></div>
+</aside>
+<section class="main" id="mainS">
+  <div class="empty"><div><h2>Frerchat</h2><p>Choisis une discussion, ou ajoute quelqu’un avec son code (bouton + en haut).</p></div></div>
+  <div class="chat">
+    <div class="bar hd"><button class="ic back" id="back" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg></button>
+      <div class="av" id="hav"></div><div class="who"><div class="n" id="hn"></div><div class="s" id="hs"></div></div></div>
+    <div class="lock"><span>🔒 Version chiffrée : seuls vous et votre contact (même phrase secrète) pouvez lire.</span><button id="lockx">Quitter</button></div>
+    <div class="msgs" id="msgs"></div>
+    <form class="ft" id="form" autocomplete="off">
+      <div class="box"><input id="inp" placeholder="Écris un message" aria-label="Message"></div>
+      <button class="ic" type="submit" aria-label="Envoyer" style="color:var(--main)"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+    </form>
+  </div>
+</section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+var SB_URL='https://rmtrflmnpwiffycnoiug.supabase.co',SB_KEY='sb_publishable_iNBefSdKIQoXTkC7t_YgaA_XBzHVhvb';
+var sb=supabase.createClient(SB_URL,SB_KEY);
+var $=function(i){return document.getElementById(i)},app=$('app'),R=document.documentElement;
+var seenSync={},me=null,prof=null,P={},byC={},cur=null,secretMode=false,seen={},ai=[],K={},PH={},sup=false,ch=null;
+var AIID='ai',AIN='Assistant IA',DEF='#009688';
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function hm(ts){var d=new Date(ts);return('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)}
+function dayL(ts){var d=new Date(ts),n=new Date(),y=new Date(Date.now()-864e5);if(d.toDateString()===n.toDateString())return 'Aujourd’hui';if(d.toDateString()===y.toDateString())return 'Hier';return d.toLocaleDateString('fr-FR')}
+function stamp(ts){return new Date(ts).toDateString()===new Date().toDateString()?hm(ts):dayL(ts)}
+var S1='M11.1 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.879a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.364.364 0 0 0 .006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z';
+var S2='M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.418.418 0 0 0 .036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 0 0-.064-.512z'+S1;
+function tick(){return '<svg viewBox="0 0 16 15" style="color:var(--sub)"><path d="'+S2+'"/></svg>'}
+/* couleur */
+function setColor(c,save){if(!/^#[0-9a-f]{6}$/i.test(c))c=DEF;R.style.setProperty('--main',c);R.classList.toggle('custom',c.toLowerCase()!==DEF);
+var m=document.querySelector('meta[name=theme-color]');if(m)m.content=c;if(save){ls('fc-color',c);if(me)sb.from('chat_profiles').update({color:c}).eq('id',me).then(function(){})}}
+setColor(ls('fc-color')||DEF);
+var th=ls('fc-theme');if(th)R.dataset.theme=th;
+function isDark(){return R.dataset.theme?R.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches}
+/* appui long */
+var lpT=null,lpFired=false,lpX=0,lpY=0;
+function lpStart(e,fn){lpFired=false;lpX=e.clientX;lpY=e.clientY;clearTimeout(lpT);lpT=setTimeout(function(){lpFired=true;if(navigator.vibrate)navigator.vibrate(30);fn()},550)}
+function lpStop(){clearTimeout(lpT)}
+document.addEventListener('pointermove',function(e){if(lpT&&(Math.abs(e.clientX-lpX)>10||Math.abs(e.clientY-lpY)>10))lpStop()});
+document.addEventListener('pointerup',lpStop);document.addEventListener('pointercancel',lpStop);
+document.addEventListener('contextmenu',function(e){if(e.target.closest('.row,#theme'))e.preventDefault()});
+/* pages */
+function page(html){$('pgc').innerHTML=html;$('pg').hidden=false;return $('pgc')}
+function closePage(){$('pg').hidden=true;$('pgc').innerHTML=''}
+/* auth */
+var signup=false;
+function authUI(){$('ah').textContent=signup?'Créer un compte':'Connexion';$('ap').textContent=signup?'Quelques secondes suffisent.':'Retrouve tes discussions.';$('nameW').hidden=!signup;$('ago').textContent=signup?'Créer mon compte':'Se connecter';$('aswap').textContent=signup?'J’ai déjà un compte':'Créer un compte';$('apass').autocomplete=signup?'new-password':'current-password';$('aerr').textContent=''}
+$('aswap').onclick=function(){signup=!signup;authUI()};
+$('ago').onclick=async function(){var em=$('amail').value.trim(),pw=$('apass').value,nm=$('aname').value.trim(),er=$('aerr');er.textContent='';er.style.color='';
+if(!em||pw.length<6){er.textContent='E-mail et mot de passe (6 caractères min.) requis.';return}
+$('ago').disabled=true;
+try{var r=signup?await sb.auth.signUp({email:em,password:pw,options:{data:{name:nm}}}):await sb.auth.signInWithPassword({email:em,password:pw});
+if(r.error){er.textContent=r.error.message==='Invalid login credentials'?'E-mail ou mot de passe incorrect.':/fetch|network/i.test(r.error.message)?'Serveur injoignable. Ouvre la page depuis ton site (Vercel), pas dans l’aperçu d’un éditeur, et désactive ton bloqueur de pub.':r.error.message}
+else if(!r.data.session){er.style.color='var(--main)';er.textContent='Compte créé. Confirme ton e-mail, puis connecte-toi.';signup=false;authUI();er.textContent='Compte créé. Confirme ton e-mail, puis connecte-toi.'}
+else{$('auth').hidden=true;enter(r.data.session.user)}}catch(e){er.textContent='Connexion impossible. Réessaie.'}
+$('ago').disabled=false};
+/* données */
+function otherOf(m){return m.sender===me?m.recipient:m.sender}
+function pf(id){return id===AIID?{name:AIN,color:'#7e57c2'}:(P[id]||{name:'…',color:'#9e9e9e'})}
+function avH(id,big){var p=pf(id);return '<div class="av" style="background-color:'+esc(p.color||'#9e9e9e')+'">'+(id===AIID?'IA':esc((p.name||'?').charAt(0).toUpperCase()))+'</div>'}
+function nm(id){return pf(id).name}
+function addMsg(m){var o=otherOf(m),a=byC[o]||(byC[o]=[]);if(a.some(function(x){return x.id===m.id}))return false;m.ts=Date.parse(m.created_at);a.push(m);a.sort(function(x,y){return x.ts-y.ts});return true}
+async function plain(m){if(!m.secret||m.plain!==undefined)return;var o=otherOf(m);if(!K[o])return;m.plain=await dect(K[o],m.body)}
+async function enter(user){me=user.id;app.hidden=false;
+var r=await sb.rpc('chat_init',{p_name:(user.user_metadata&&user.user_metadata.name)||''});
+if(r.error||!r.data){app.hidden=true;$('auth').hidden=false;$('aerr').textContent='Base de messagerie indisponible.';return}
+prof=r.data;P[me]=prof;if(prof.color)setColor(prof.color);if(prof.theme){R.dataset.theme=prof.theme;ls('fc-theme',prof.theme)}
+seen={};seenSync={};ai=[];
+var sr=await sb.from('chat_seen').select('contact_id,seen_at');(sr.data||[]).forEach(function(x){seen[x.contact_id]=Date.parse(x.seen_at);seenSync[x.contact_id]=seen[x.contact_id]});
+var ar=await sb.from('chat_ai').select('w,body,created_at').order('created_at',{ascending:true}).limit(300);(ar.data||[]).forEach(function(x){ai.push({w:x.w,t:x.body,ts:Date.parse(x.created_at)})});
+var a=$('mav');a.style.background=prof.color||'#9e9e9e';a.textContent=(prof.name||'?').charAt(0).toUpperCase();
+await loadContacts();
+var mr=await sb.from('chat_messages').select('*').order('created_at',{ascending:false}).limit(1000);
+(mr.data||[]).forEach(addMsg);render();
+if(ch)sb.removeChannel(ch);
+ch=sb.channel('fc-'+me).on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},async function(p){var m=p.new;if(m.sender!==me&&m.recipient!==me)return;if(!P[otherOf(m)])await loadContacts();
+if(addMsg(m)){await plain(m);if(cur===otherOf(m)){if(!secretMode&&!m.secret)seen[cur]=Date.now();saveSeen();draw()}render()}})
+.on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_contacts',filter:'user_id=eq.'+me},async function(){await loadContacts();render()}).subscribe()}
+async function loadContacts(){var c=await sb.from('chat_contacts').select('contact_id');var ids=(c.data||[]).map(function(x){return x.contact_id});if(!ids.length)return;
+var r=await sb.from('chat_profiles').select('id,name,color').in('id',ids);(r.data||[]).forEach(function(p){P[p.id]=p});ids.forEach(function(i){if(!byC[i])byC[i]=[]})}
+function saveSeen(){var rows=[];Object.keys(seen).forEach(function(k){if(seenSync[k]!==seen[k]){seenSync[k]=seen[k];rows.push({user_id:me,contact_id:k,seen_at:new Date(seen[k]).toISOString()})}});if(rows.length)sb.from('chat_seen').upsert(rows).then(function(){})}
+function aiSave(w,t,ts){sb.from('chat_ai').insert({user_id:me,w:w,body:t,created_at:new Date(ts).toISOString()}).then(function(){})}
+function lastOf(id){if(id===AIID)return ai[ai.length-1];var a=byC[id]||[];for(var i=a.length-1;i>=0;i--)if(!a[i].secret)return a[i]}
+function render(){var q=$('q').value.trim().toLowerCase(),ids=[AIID].concat(Object.keys(byC)),rows=ids.map(function(id){var l=lastOf(id);return{id:id,l:l,ts:l?(l.ts||0):0}});
+rows.sort(function(a,b){return id0(a)-id0(b)||b.ts-a.ts});function id0(r){return r.id===AIID?-1:0}
+var h='',cnt=0;rows.forEach(function(r){if(q&&nm(r.id).toLowerCase().indexOf(q)<0)return;cnt++;
+var l=r.l,u=0;if(r.id!==AIID)u=(byC[r.id]||[]).filter(function(m){return !m.secret&&m.sender===r.id&&m.ts>(seen[r.id]||0)}).length;if(r.id===cur&&!secretMode)u=0;
+var mine=l&&(r.id===AIID?l.w==='out':l.sender===me),txt=l?(r.id===AIID?l.t:l.body):(r.id===AIID?'Parle avec ton assistant':'Nouvelle discussion');
+h+='<button class="row'+(r.id===cur?' on':'')+'" data-id="'+esc(r.id)+'">'+avH(r.id)+'<div class="mid"><div class="l1"><span class="name">'+esc(nm(r.id))+'</span><span class="time'+(u?' u':'')+'">'+(l?stamp(l.ts):'')+'</span></div><div class="l2"><span class="prev">'+(mine?tick():'')+esc(txt)+'</span>'+(u?'<span class="badge">'+u+'</span>':'')+'</div></div></button>'});
+if(Object.keys(byC).length===0&&!q)h+='<p class="note">Aucun contact pour l’instant.<br>Appuie sur + et tape le code d’un ami (visible dans ses réglages).</p>';
+$('list').innerHTML=h}
+function head(){$('hn').textContent=nm(cur);var a=$('hav');a.style.background=pf(cur).color||'#9e9e9e';a.textContent=cur===AIID?'IA':(nm(cur)||'?').charAt(0).toUpperCase();$('hs').textContent=cur===AIID?'Assistant intégré':(secretMode?'Version chiffrée':'');$('mainS').classList.toggle('sec',secretMode)}
+function draw(){var el=$('msgs'),h='',p='',d='',near=el.scrollHeight-el.scrollTop-el.clientHeight<120;
+var list=cur===AIID?ai.map(function(m){return{w:m.w,t:m.t,ts:m.ts}}):(byC[cur]||[]).filter(function(m){return !!m.secret===secretMode}).map(function(m){return{w:m.sender===me?'out':'in',t:m.secret?m.plain:m.body,ts:m.ts}});
+list.forEach(function(m){var dl=dayL(m.ts);if(dl!==d){h+='<div class="day">'+esc(dl)+'</div>';d=dl;p=''}
+var bad=m.t==null;h+='<div class="m '+m.w+(p!==m.w?' first':'')+(bad?' bad':'')+'">'+(bad?'🔒 Message illisible (phrase secrète différente ?)':esc(m.t))+'<span class="t">'+hm(m.ts)+(m.w==='out'?tick():'')+'</span></div>';p=m.w});
+el.innerHTML=h;if(near||el.dataset.k!==cur+secretMode){el.scrollTop=el.scrollHeight;el.dataset.k=cur+secretMode}}
+async function open(id,secret){cur=id;secretMode=!!secret&&id!==AIID;app.classList.add('open');head();
+if(secretMode){var ok=await getKey(id);if(!ok){secretMode=false;if(!cur){return}head()}else{await Promise.all((byC[id]||[]).map(plain))}}
+if(!secretMode){seen[id]=Date.now();saveSeen()}
+$('msgs').dataset.k='';head();draw();render();if(innerWidth>760)$('inp').focus()}
+/* chiffrement */
+var enc=new TextEncoder(),dec=new TextDecoder();
+function tob(u){var s='';u.forEach(function(x){s+=String.fromCharCode(x)});return btoa(s)}
+function fromb(s){return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}
+async function mkKey(o,ph){var km=await crypto.subtle.importKey('raw',enc.encode(ph),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:enc.encode('frerchat:'+[me,o].sort().join(':')),iterations:150000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function enct(k,t){var iv=crypto.getRandomValues(new Uint8Array(12)),c=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(t))),o=new Uint8Array(12+c.length);o.set(iv);o.set(c,12);return tob(o)}
+async function dect(k,b){try{var u=fromb(b);return dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:u.slice(0,12)},k,u.slice(12)))}catch(e){return null}}
+function getKey(o){return new Promise(function(res){if(K[o])return res(true);
+var c=page('<h1>🔒 Version chiffrée</h1><p>Choisis une phrase secrète. Ton contact doit taper exactement la même pour lire tes messages. Elle n’est jamais envoyée ni enregistrée.</p><label for="ph">Phrase secrète</label><input id="ph" type="password" autocomplete="off"><div class="err" id="pe"></div><button class="btn" id="pok">Ouvrir</button><button class="link" id="pno">Annuler</button>');
+var go=async function(){var v=$('ph').value;if(v.length<4){$('pe').textContent='4 caractères minimum.';return}
+K[o]=await mkKey(o,v);(byC[o]||[]).forEach(function(m){delete m.plain});closePage();res(true)};
+$('pok').onclick=go;$('ph').onkeydown=function(e){if(e.key==='Enter')go()};$('pno').onclick=function(){closePage();res(false)};$('ph').focus()})}
+/* envoi */
+function aiReply(t){var s=t.toLowerCase();
+if(/salut|bonjour|hello|coucou|yo\b/.test(s))return 'Salut ! Je suis l’assistant intégré de Frerchat. Pose-moi une question sur l’app.';
+if(/code|ajout|contact|ami/.test(s))return 'Pour ajouter quelqu’un : ouvre Réglages, lis ton code à 8 chiffres et donne-le à ton ami. Lui tape le tien avec le bouton +.';
+if(/chiffr|secret|cach/.test(s))return 'Appuie longtemps sur une discussion pour ouvrir sa version chiffrée. Choisissez la même phrase secrète tous les deux.';
+if(/couleur|theme|thème|sombre/.test(s))return 'Appuie sur la lune pour passer en sombre. Appui long sur la lune : tu choisis la couleur que tu veux.';
+if(/merci/.test(s))return 'Avec plaisir !';
+return 'Je suis un assistant simple pour l’instant : je réponds sur les codes, le chiffrement et les couleurs. Une vraie IA peut être branchée plus tard.'}
+async function send(t){
+if(cur===AIID){var ts=Date.now();ai.push({w:'out',t:t,ts:ts});aiSave('out',t,ts);draw();render();
+setTimeout(function(){var rt=aiReply(t),n=Date.now();ai.push({w:'in',t:rt,ts:n});aiSave('in',rt,n);if(cur===AIID)draw();render()},700);return}
+var o=cur,body=t;if(secretMode){if(!K[o])return;body=await enct(K[o],t)}
+var r=await sb.from('chat_messages').insert({sender:me,recipient:o,body:body,secret:secretMode}).select().single();
+if(r.error){$('hs').textContent='Envoi impossible : '+r.error.message;return}
+var m=r.data;if(m.secret)m.plain=t;if(addMsg(m)){}draw();render()}
+$('form').addEventListener('submit',function(e){e.preventDefault();var v=$('inp').value.trim();if(!v||!cur)return;$('inp').value='';send(v)});
+/* liste */
+$('list').addEventListener('pointerdown',function(e){var b=e.target.closest('.row');if(!b)return;lpStart(e,function(){if(b.dataset.id===AIID)return;open(b.dataset.id,true)})});
+$('list').addEventListener('click',function(e){var b=e.target.closest('.row');if(!b)return;if(lpFired){lpFired=false;return}open(b.dataset.id,false)});
+$('lockx').onclick=function(){if(cur)open(cur,false)};
+$('back').onclick=function(){app.classList.remove('open');cur=null;secretMode=false;$('mainS').classList.remove('sec');render()};
+$('q').oninput=render;
+/* ajout par code */
+$('add').onclick=function(){page('<h1>Ajouter un contact</h1><p>Tape le code à 8 chiffres de ton ami (dans ses Réglages).</p><label for="cd">Code</label><input id="cd" type="tel" inputmode="numeric" maxlength="12" placeholder="12345678" autocomplete="off"><div class="err" id="ce"></div><button class="btn" id="cok">Ajouter</button><button class="link" id="cno">Fermer</button>');
+var go=async function(){var v=$('cd').value.replace(/\D/g,'');if(v.length!==8){$('ce').textContent='Le code a 8 chiffres.';return}
+var r=await sb.rpc('chat_add_contact',{p_code:v});
+if(r.error){$('ce').textContent=/code_inconnu/.test(r.error.message)?'Aucun compte avec ce code.':/code_personnel/.test(r.error.message)?'C’est ton propre code.':'Ajout impossible.';return}
+P[r.data.id]=r.data;if(!byC[r.data.id])byC[r.data.id]=[];closePage();render();open(r.data.id,false)};
+$('cok').onclick=go;$('cd').onkeydown=function(e){if(e.key==='Enter')go()};$('cno').onclick=closePage;$('cd').focus()};
+/* réglages */
+$('set').onclick=function(){var c=prof.code;
+page('<h1>Réglages</h1><p>Ton code : donne-le à tes amis pour qu’ils t’ajoutent.</p><div class="code" id="mc">'+esc(c.slice(0,4)+' '+c.slice(4))+'</div><button class="link" id="cp">Copier mon code</button><label for="nn">Mon prénom</label><input id="nn" type="text" maxlength="40" value="'+esc(prof.name)+'"><div class="err" id="se"></div><button class="btn" id="sv">Enregistrer</button><p style="margin-top:18px;font-size:13px">Astuces : appui long sur une discussion = version chiffrée · appui long sur la lune = choisir la couleur.</p><button class="btn g" id="lo">Se déconnecter</button><button class="link" id="sx">Fermer</button>');
+$('cp').onclick=function(){try{navigator.clipboard.writeText(c);$('cp').textContent='Code copié'}catch(e){}};
+$('sv').onclick=async function(){var n=$('nn').value.trim();if(!n)return;var r=await sb.from('chat_profiles').update({name:n}).eq('id',me);if(r.error){$('se').textContent='Impossible d’enregistrer.';return}prof.name=n;P[me]=prof;$('mav').textContent=n.charAt(0).toUpperCase();closePage()};
+$('lo').onclick=async function(){await sb.auth.signOut();location.reload()};$('sx').onclick=closePage};
+/* thème : appui court = clair/sombre, appui long = couleur */
+$('theme').addEventListener('pointerdown',function(e){lpStart(e,colorPage)});
+$('theme').addEventListener('click',function(){if(lpFired){lpFired=false;return}var d=!isDark();R.dataset.theme=d?'dark':'light';ls('fc-theme',R.dataset.theme);sb.from('chat_profiles').update({theme:R.dataset.theme}).eq('id',me).then(function(){})});
+function colorPage(){var cur0=R.style.getPropertyValue('--main')||DEF,pre=['#009688','#25d366','#1e88e5','#8e24aa','#e53935','#fb8c00','#d81b60','#546e7a'];
+page('<h1>Ta couleur</h1><p>Choisis celle que tu veux.</p><div class="prevbox"><i class="a">Salut !</i><i class="b">Ça te plaît ?</i></div><div class="pick"><input id="cc" type="color" value="'+esc(cur0)+'" aria-label="Couleur"></div><div class="sw">'+pre.map(function(c){return '<button data-c="'+c+'" style="background:'+c+'" aria-label="'+c+'"></button>'}).join('')+'</div><button class="btn" id="cs">Enregistrer</button><button class="btn g" id="cr">Revenir à la couleur d’origine</button><button class="link" id="cx">Fermer</button>');
+var orig=cur0;$('cc').oninput=function(){setColor($('cc').value)};
+$('pgc').querySelector('.sw').onclick=function(e){var b=e.target.closest('button');if(!b)return;$('cc').value=b.dataset.c;setColor(b.dataset.c)};
+$('cs').onclick=function(){setColor($('cc').value,true);closePage()};
+$('cr').onclick=function(){$('cc').value=DEF;setColor(DEF,true);closePage()};
+$('cx').onclick=function(){setColor(orig);closePage()}}
+/* démarrage */
+async function boot(){authUI();var s=await sb.auth.getSession();if(s.data&&s.data.session)enter(s.data.session.user);else $('auth').hidden=false}
+boot();
+})();
+</script>
+</body></html>
